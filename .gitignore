@@ -1,0 +1,16 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Downloaded datasets (torchvision re-downloads these)
+data/
+
+# Editor / OS files
+.vscode/
+.DS_Store
+Thumbs.db
