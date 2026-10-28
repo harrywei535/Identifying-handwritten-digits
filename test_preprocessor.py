@@ -148,6 +148,33 @@ class PreprocessorTests(unittest.TestCase):
             digits = load_digits(self.save(draw(text), f"single_{text}.png"))
             self.assertEqual(len(digits), 1, text)
 
+    @unittest.skipUnless(os.path.exists("mnist_cnn.pth"), "needs a trained model")
+    def test_ruled_lines_are_removed(self):
+        from predict import read_number
+
+        for tilt in (0, 3):                       # degrees, like a photo taken at an angle
+            text = "3248"
+            img = draw(text, size=(260 * len(text) + 140, 300), scale=5.0, thickness=10)
+            (_, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 5.0, 10)
+            baseline = (300 + th) // 2
+            w = img.shape[1]
+            dy = int(round(np.tan(np.radians(tilt)) * w / 2))
+            # Lighter, thinner ruled lines; one runs along the digits' baseline,
+            # so the flat bottom of the 2 lies right on it
+            for y in (baseline - 2 * th // 3, baseline, baseline + 2 * th // 3):
+                cv2.line(img, (0, y + dy), (w - 1, y - dy), 120, 3, cv2.LINE_AA)
+
+            number, _, _ = read_number(self.save(add_shadow(img), f"ruled_{tilt}.png"))
+            self.assertEqual(number, text, f"tilt {tilt}")
+
+    def test_line_removal_keeps_digit_strokes(self):
+        from preprocessor import _remove_ruled_lines
+
+        # A tightly cropped 7: its top bar is long and straight but is not a line
+        img = draw("7", size=(200, 260))
+        _, mask = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
+        self.assertTrue(np.array_equal(_remove_ruled_lines(mask), mask))
+
     def test_deskew_straightens_a_slanted_stroke(self):
         a = np.zeros((28, 28), np.float32)
         cv2.line(a, (9, 24), (19, 4), 1.0, 3)                # leans right
