@@ -1,0 +1,9 @@
+# Tested with Python 3.12
+# Install with: python -m pip install -r requirements.txt
+matplotlib==3.11.2
+numpy==2.5.3
+opencv-python-headless==4.13.0.92
+pillow==12.3.0
+scipy==1.18.1
+torch==2.14.0
+torchvision==0.29.0
